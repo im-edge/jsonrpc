@@ -107,6 +107,10 @@ class JsonRpcConnection
     protected function handleResponse(Response $response): void
     {
         $id = $response->id;
+        if ($id === null) {
+            throw new RuntimeException("Got a JSON-RPC response w/o id - this shouldn't happen");
+        }
+
         if (isset($this->pending[$id])) {
             $deferred = $this->pending[$id];
             $this->forget($id);
