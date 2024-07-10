@@ -171,7 +171,7 @@ class JsonRpcConnection
     protected function forget(string|int|float|bool $requestId): void
     {
         if (isset($this->scheduledTimeouts[$requestId])) {
-            EventLoop::unreference($this->scheduledTimeouts[$requestId]);
+            EventLoop::cancel($this->scheduledTimeouts[$requestId]);
             unset($this->scheduledTimeouts[$requestId]);
         }
         unset($this->pending[$requestId]);
