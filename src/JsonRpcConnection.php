@@ -109,7 +109,7 @@ class JsonRpcConnection
         $id = $response->id;
         if (isset($this->pending[$id])) {
             $deferred = $this->pending[$id];
-            unset($this->pending[$id]);
+            $this->forget($id);
             try {
                 $deferred->complete($response);
             } catch (Throwable $e) {
@@ -157,10 +157,20 @@ class JsonRpcConnection
     protected function scheduleRequestTimeout(string|int|float|bool $requestId): void
     {
         $this->scheduledTimeouts[$requestId] = EventLoop::delay(300, function () use ($requestId) {
-            $this->pending[$requestId]->error(new JsonRpcRequestError('Request timed out'));
-            unset($this->pending[$requestId]);
             unset($this->scheduledTimeouts[$requestId]);
+            $request = $this->pending[$requestId];
+            unset($this->pending[$requestId]);
+            $request->error(new JsonRpcRequestError('Request timed out'));
         });
+    }
+
+    protected function forget(string|int|float|bool $requestId): void
+    {
+        if (isset($this->scheduledTimeouts[$requestId])) {
+            EventLoop::unreference($this->scheduledTimeouts[$requestId]);
+            unset($this->scheduledTimeouts[$requestId]);
+        }
+        unset($this->pending[$requestId]);
     }
 
     public function sendRequest(Request $request): Response
