@@ -60,7 +60,7 @@ class JsonRpcConnection
             $this->logger?->error('Reading from NetString reader failed: ' . $e->getMessage());
         }
         $this->close();
-        $this->logger?->notice('JSON-RPC connection closed');
+        // $this->logger?->notice('JSON-RPC connection closed');
     }
 
     protected function processReceivedData(string $data): void
