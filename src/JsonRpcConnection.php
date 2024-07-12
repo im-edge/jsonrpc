@@ -28,8 +28,8 @@ class JsonRpcConnection
     public function __construct(
         protected readonly ReadableStream $in,
         protected readonly WritableStream $out,
-        protected readonly ?RequestHandler $requestHandler = null,
-        protected readonly ?LoggerInterface $logger = null,
+        public ?RequestHandler $requestHandler = null,
+        public ?LoggerInterface $logger = null,
     ) {
         EventLoop::queue($this->keepReading(...));
     }
