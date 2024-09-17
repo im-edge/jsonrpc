@@ -216,6 +216,10 @@ class JsonRpcConnection
             $pending->error($exception);
         }
         $this->pending = [];
+        foreach ($this->scheduledTimeouts as $timer) {
+            EventLoop::cancel($timer);
+        }
+        $this->scheduledTimeouts = [];
     }
 
     public function sendPacket(Packet $packet): void
