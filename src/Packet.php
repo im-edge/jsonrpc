@@ -2,10 +2,9 @@
 
 namespace IMEdge\JsonRpc;
 
-use gipfl\Json\JsonEncodeException;
-use gipfl\Json\JsonException;
-use gipfl\Json\JsonSerialization;
-use gipfl\Json\JsonString;
+use IMEdge\Json\JsonSerialization;
+use IMEdge\Json\JsonString;
+use JsonException;
 use stdClass;
 
 use function property_exists;
@@ -15,7 +14,7 @@ abstract class Packet implements JsonSerialization
     protected ?stdClass $extraProperties = null;
 
     /**
-     * @throws JsonEncodeException
+     * @throws JsonException
      */
     public function toString(): string
     {

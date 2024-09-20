@@ -25,7 +25,7 @@
     "require": {
         "php": ">=8.1",
         "amphp/byte-stream": "^2.1",
-        "gipfl/json": "^0.2.0",
+        "imedge/json": ">=0.1",
         "psr/log": "^1.0|^3.0"
     },
     "require-dev": {
