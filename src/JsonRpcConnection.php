@@ -24,6 +24,8 @@ class JsonRpcConnection
     /** @var array<scalar, string> */
     protected array $scheduledTimeouts = [];
     protected int $unknownErrorCount = 0;
+    /** @var Packet[] */
+    protected array $pendingReceivedPackets = [];
 
     public function __construct(
         protected readonly ReadableStream $in,
@@ -65,15 +67,23 @@ class JsonRpcConnection
 
     protected function processReceivedData(string $data): void
     {
-        $packet = Packet::decode($data);
-        if ($packet instanceof Response) {
-            $this->handleResponse($packet);
-        } elseif ($packet instanceof Request) {
-            $this->handleRequest($packet);
-        } elseif ($packet instanceof Notification) {
-            $this->handleNotification($packet);
-        } else {
-            throw new RuntimeException('Got unknown JSON-RPC Packet implementation: ' . get_class($packet));
+        // Deferred processing, as otherwise yield in out netstring reader would block (even with await)
+        $this->pendingReceivedPackets[] = Packet::decode($data);
+        EventLoop::queue(self::processPendingPackets(...));
+    }
+
+    protected function processPendingPackets(): void
+    {
+        while ($packet = array_shift($this->pendingReceivedPackets)) {
+            if ($packet instanceof Response) {
+                $this->handleResponse($packet);
+            } elseif ($packet instanceof Request) {
+                $this->handleRequest($packet);
+            } elseif ($packet instanceof Notification) {
+                $this->handleNotification($packet);
+            } else {
+                $this->logger?->error('Got unknown JSON-RPC Packet implementation: ' . get_class($packet));
+            }
         }
     }
 
